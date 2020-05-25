@@ -40,7 +40,9 @@ class Server(commands.Cog):
         
         ai = self.bot.get_cog('AI')
         if ai is not None:
-            await ai.start_dungeon(ctx, channel)
+            await ai.play_dungeon(ctx, channel)
+        else:
+            await channel.send("Something horribly wrong occured...")
 
     @commands.command()
     async def clear(self, ctx, amount : int):
@@ -57,9 +59,12 @@ class Server(commands.Cog):
     @commands.command()
     async def restart(self, ctx):
         a = ctx.author
-        await ctx.bot.get_channel(self.dungeon_instances[a.id]).delete()
-        del self.dungeon_instances[a.id]
-        await ctx.send(f"{ctx.author.mention} Your dungeon is cleared.")
+        if a.id in self.dungeon_instances:
+            await ctx.bot.get_channel(self.dungeon_instances[a.id]).delete()
+            del self.dungeon_instances[a.id]
+            await ctx.send(f"{ctx.author.mention} Your dungeon is cleared.")
+        else:
+            await ctx.send(f"{ctx.author.mention} You have no dungeon to clear.")
 
     @commands.command()
     async def restart_all(self, ctx):
