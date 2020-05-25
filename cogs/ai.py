@@ -11,9 +11,9 @@ class AI(commands.Cog):
     async def on_ready(self):
         print('AI Script loaded')
 
-    @commands.command()
-    async def say_1(self, ctx, arg):
-        await ctx.send(arg)
+    @commands.is_owner()
+    async def start_dungeon(self, ctx, channel):
+        await channel.send("Initializing AI Dungeon! (This might take a few minutes)")
 
 
 def setup(bot):

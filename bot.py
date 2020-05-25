@@ -13,7 +13,7 @@ extensions = [
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity=discord.Game('Roblox'))
+    await bot.change_presence(activity=discord.Game('AI Dungeon 2'))
 
 
 # @bot.command()

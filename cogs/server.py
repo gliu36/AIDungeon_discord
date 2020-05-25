@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 
-GUILD_ID = 714294408572567574
-
 class Server(commands.Cog):
 
     def __init__(self, bot):
@@ -16,29 +14,45 @@ class Server(commands.Cog):
         print('Server script loaded')
 
     @commands.command()
-    async def say(self, ctx, x):
-        await ctx.send(x)
-
-    @commands.command()
     async def new_game(self, ctx):
         name = ctx.author.name
         _id = ctx.author.id
 
+        # Only 1 instance per user
         if ctx.author.id in self.dungeon_instances.keys():
             await ctx.send(f"{ctx.author.mention} You already have a dungeon: {ctx.bot.get_channel(self.dungeon_instances[_id]).mention}. Use '>>restart' to restart your dungeon.")
         else:
-            guild = ctx.bot.get_guild(GUILD_ID)
+            guild = ctx.guild
             channel = await guild.create_text_channel(f"{name}_dungeon")
-
-            await ctx.send(f"{ctx.author.mention} is now the dungeon master of {channel.mention}.")
-
-            # Only 1 instance per user
             self.dungeon_instances[ctx.author.id] = channel.id
+            await ctx.send(f"{ctx.author.mention} is now the dungeon master of {channel.mention}.")
+            await self.set_permissions(ctx, channel)
 
 
+    async def set_permissions(self, ctx, channel):
+        perms = discord.PermissionOverwrite()
+        perms.read_messages = True
+        perms.send_messages = False
+        for member in ctx.guild.members:
+            # For all other members excpet the bot
+            if ctx.author.id != ctx.bot.user.id:
+                await channel.set_permissions(member, overwrite=perms)
+        
+        ai = self.bot.get_cog('AI')
+        if ai is not None:
+            await ai.start_dungeon(ctx, channel)
+
+    @commands.command()
     async def clear(self, ctx, amount : int):
         await ctx.channel.purge(limit=amount)
         await ctx.send(f"```Cleared {amount} messages```")
+
+    @commands.command()
+    async def my_dungeon(self, ctx):
+        if ctx.author.id in self.dungeon_instances:
+            await ctx.send(f"{ctx.author.mention} This is your dungeon {ctx.bot.get_channel(self.dungeon_instances[ctx.author.id]).mention}")
+        else:
+            await ctx.send(f"{ctx.author.mention} You do not have a dungeon. Make one with >>new_game")
 
     @commands.command()
     async def restart(self, ctx):
@@ -49,12 +63,14 @@ class Server(commands.Cog):
 
     @commands.command()
     async def restart_all(self, ctx):
-        for _id in self.dungeon_instances.values():
-            await ctx.bot.get_channel(_id).delete()
+        if not self.dungeon_instances:
+            await ctx.send(f"```No dungeons to reset.```")
+        else:
+            for _id in self.dungeon_instances.values():
+                await ctx.bot.get_channel(_id).delete()
 
-        self.dungeon_instances = {}
-        # await self.clear(ctx, amount=100)
-        await ctx.send(f"```All dungeons reset.```")
+            self.dungeon_instances = {}
+            await ctx.send(f"```All dungeons reset.```")
 
 
 def setup(bot):
