@@ -9,16 +9,11 @@ class AI(commands.Cog):
     # Events
     @commands.Cog.listener()
     async def on_ready(self):
-        print('ni hao2')
+        print('AI Script loaded')
 
     @commands.command()
-    async def test_1(self, ctx, arg):
+    async def say_1(self, ctx, arg):
         await ctx.send(arg)
-
-    @commands.command()
-    async def clear_1(self, ctx, amount=5):
-        await ctx.channel.purge(limit=amount)
-        await ctx.send("Cleared {} messages.".format(amount))
 
 
 def setup(bot):
