@@ -35,6 +35,10 @@ class AI(commands.Cog):
     async def channel_say(self, channel, msg):
         return await channel.send(f"```{msg}```")
 
+    async def lock_channel(self, ctx, channel, lock):
+        perms = discord.PermissionOverwrite()
+        perms.send_messages = not lock
+        await channel.set_permissions(ctx.author, overwrite=perms)
 
     async def select_game(self, ctx, channel):
         with open(YAML_FILE, "r") as stream:
@@ -63,14 +67,14 @@ class AI(commands.Cog):
 
         setting_key = list(settings)[choice]
 
-        await channel.send("```Pick a character.```")
         characters = data["settings"][setting_key]["characters"]
         print_str = ''
         for i, character in enumerate(characters):
             print_str += (str(i) + ") " + character) + '\n'
-        await channel.send(f"```{print_str}```")
-        character_key = list(characters)[self.get_num(ctx, channel, len(characters))]
+        await channel.send(f"```Pick a character.\n\n{print_str}```")
+        character_key = list(characters)[await self.get_num(ctx, channel, len(characters))]
         
+        await self.channel_say(channel, "What is your name?")
         name = await self.get_text(ctx, channel)
 
         setting_description = data["settings"][setting_key]["description"]
@@ -159,6 +163,7 @@ class AI(commands.Cog):
 
     @commands.is_owner()
     async def play_dungeon(self, ctx, channel):
+        await self.lock_channel(ctx, channel, True)
         await channel.send("```Initializing AI Dungeon! (This might take a few minutes)```")
         generator = GPT2Generator()
         story_manager = UnconstrainedStoryManager(generator)
@@ -169,7 +174,7 @@ class AI(commands.Cog):
 
         upload_story = False
 
-
+        await self.lock_channel(ctx, channel, True)
         while True:
             if story_manager.story != None:
                 story_manager.story = None
@@ -211,7 +216,11 @@ class AI(commands.Cog):
                     await channel.send(f"```{result}\n\n>>Enter your action below:```")
 
             while True:
+                await self.lock_channel(ctx, channel, False)
+                thinking_msg = await channel.send("```Bot is thinking...```")
                 action = await self.get_text(ctx, channel)
+                await thinking_msg.delete()
+                await self.lock_channel(ctx, channel, True)
 
                 if len(action) > 0 and action[0] == "/":
                     split = action[1:].split(" ")  # removes preceding slash
