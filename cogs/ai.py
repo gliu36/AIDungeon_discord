@@ -174,7 +174,7 @@ class AI(commands.Cog):
 
         upload_story = False
 
-        await self.lock_channel(ctx, channel, True)
+        await self.lock_channel(ctx, channel, False)
         while True:
             if story_manager.story != None:
                 story_manager.story = None
@@ -217,9 +217,8 @@ class AI(commands.Cog):
 
             while True:
                 await self.lock_channel(ctx, channel, False)
-                thinking_msg = await channel.send("```Bot is thinking...```")
                 action = await self.get_text(ctx, channel)
-                await thinking_msg.delete()
+                thinking_msg = await channel.send("```Bot is thinking...```")
                 await self.lock_channel(ctx, channel, True)
 
                 if len(action) > 0 and action[0] == "/":
@@ -361,6 +360,7 @@ class AI(commands.Cog):
 
                     else:
                         await self.channel_say(channel, result)
+                await thinking_msg.delete()
         
         
         
