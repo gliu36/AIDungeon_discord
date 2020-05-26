@@ -34,8 +34,8 @@ class Server(commands.Cog):
         perms.read_messages = True
         perms.send_messages = False
         for member in ctx.guild.members:
-            # For all other members excpet the bot
-            if ctx.author.id != ctx.bot.user.id:
+            # For all other members excpet the bot and DM
+            if ctx.author.id != ctx.bot.user.id and member != ctx.author:
                 await channel.set_permissions(member, overwrite=perms)
         
         ai = self.bot.get_cog('AI')
