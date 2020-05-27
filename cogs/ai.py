@@ -162,11 +162,9 @@ class AI(commands.Cog):
 
 
     @commands.is_owner()
-    async def play_dungeon(self, ctx, channel):
-        await self.lock_channel(ctx, channel, True)
-        await channel.send("```Initializing AI Dungeon! (This might take a few minutes)```")
-        generator = GPT2Generator()
-        story_manager = UnconstrainedStoryManager(generator)
+    async def play_dungeon(self, ctx, channel, generator, story_manager):
+        # await self.lock_channel(ctx, channel, True)
+        # await channel.send("```Initializing AI Dungeon! (This might take a few minutes)```")
 
         with open(r"AIDungeon/opening.txt", "r", encoding="utf-8") as f:
             starter = f.read()
@@ -212,8 +210,12 @@ class AI(commands.Cog):
                     await channel.send("```What is the ID of the saved game?```")
                     load_ID = await self.get_text(ctx, channel)
                     result = story_manager.load_new_story(load_ID, upload_story=upload_story)
-                    await channel.send("\n\n\nLoading Game...\n\n")
-                    await channel.send(f"```{result}\n\n>>Enter your action below:```")
+                    if not result.startswith("Error save"):
+                        msg = await channel.send("```Loading Game...```")
+                        await channel.send(f"```{result}\n\n>>Enter your action below:```")
+                        await msg.delete()
+                    else:
+                        await channel.send(f"```{result}```")
 
             while True:
                 await self.lock_channel(ctx, channel, False)

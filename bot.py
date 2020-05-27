@@ -15,6 +15,17 @@ extensions = [
 async def on_ready():
     await bot.change_presence(activity=discord.Game('AI Dungeon 2'))
 
+@bot.event
+async def on_command_error(ctx, error):
+    if not isinstance(error, commands.CheckFailure): 
+        await ctx.send("```Invalid command```")
+
+@bot.command()
+@commands.is_owner()
+async def shutdown(ctx):
+    await ctx.send("```Exiting...```")
+    await ctx.bot.logout()
+
 
 # @bot.command()
 # async def load(ctx, extension):

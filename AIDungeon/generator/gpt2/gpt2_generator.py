@@ -25,7 +25,7 @@ class GPT2Generator:
         self.model_dir = "AIDungeon/generator/gpt2/models"
         self.checkpoint_path = os.path.join(self.model_dir, self.model_name)
 
-        models_dir = self.model_dir#os.path.expanduser(os.path.expandvars(self.model_dir))
+        models_dir = self.model_dir
         self.batch_size = 1
         self.samples = 1
 
